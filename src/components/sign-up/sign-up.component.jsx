@@ -30,7 +30,7 @@ class SignUp extends React.Component {
         }
 
         try {
-            const  {user} = await auth.createUserEmailAndPassword(
+            const  {user} = await auth.createUserWithEmailAndPassword(
                 email,
                 password
             )
@@ -50,7 +50,7 @@ class SignUp extends React.Component {
     }
 
     handleChange = event => {
-        const {name, value} = event.targer
+        const {name, value} = event.target
         
         this.setState({ [name]: value })
     }
