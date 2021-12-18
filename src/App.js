@@ -1,7 +1,6 @@
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
+
 
 import './App.css';
 
@@ -12,15 +11,38 @@ import CheckoutPage from './pages/checkout/checkout.component';
 
 import Header from './components/header/header.component';
 
-import { selectCurrentUser } from './redux/user/user.selectors';
-import { checkUserSession } from './redux/user/user.actions';
+import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+
+
+import CurrentUserContext from './contexts/current-user/current-user.context';
 
 class App extends React.Component {
+  constructor(){
+    super()
+
+    this.state= {
+      currentUser: null
+    }
+  }
+
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    const { checkUserSession } = this.props
-    checkUserSession()
+
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
+
+        userRef.onSnapshot(snapShot => {
+         this.setState({currentUser: {
+            id: snapShot.id,
+            ...snapShot.data()
+          }})
+      })
+      }
+
+      this.setState({currentUser: userAuth});
+    });
   }
 
   componentWillUnmount() {
@@ -30,7 +52,9 @@ class App extends React.Component {
   render() {
     return (
       <div>
+      <CurrentUserContext.Provider value={this.state.currentUser}>
         <Header />
+      </CurrentUserContext.Provider>
         <Switch>
           <Route exact path='/' component={HomePage} />
           <Route path='/shop' component={ShopPage} />
@@ -39,7 +63,7 @@ class App extends React.Component {
             exact
             path='/signin'
             render={() =>
-              this.props.currentUser ? (
+              this.state.currentUser ? (
                 <Redirect to='/' />
               ) : (
                 <SignInAndSignUpPage />
@@ -52,13 +76,6 @@ class App extends React.Component {
   }
 }
 
-const mapStateToProps = createStructuredSelector({
-  currentUser: selectCurrentUser
-});
-
-const mapDistachToProps = dispatch => ({
-  checkUserSession: () => dispatch(checkUserSession())
-})
 
 
-export default connect(mapStateToProps, mapDistachToProps)(App);
+export default App;
