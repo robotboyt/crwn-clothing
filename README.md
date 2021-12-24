@@ -22,6 +22,6 @@ Builds the app for production to the build folder.
 You can find two branch in "Pull Requests" and you can copy this branchs  
 (Mobile adaptive and GraphQl).
 
-Install yarn in directory and in client folder. 
+Install yarn and npm in directory and in client folder. 
 
 In the project directory, you can run: yarn dev.
